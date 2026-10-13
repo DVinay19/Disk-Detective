@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disk Detective — Storage Intelligence</title>
+<style>
+:root {
+  --bg:#f4f7ff;
+  --surface:#ffffff;
+  --text:#152344;
+  --muted:#71809f;
+  --line:#e5ebf7;
+  --blue:#3578f6;
+  --purple:#8055f6;
+  --green:#12a981;
+  --pink:#e9538c;
+  --orange:#f39a38;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px "Segoe UI",Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:238px;flex-shrink:0;background:#fff;border-right:1px solid var(--line);padding:25px 16px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:11px;padding:0 8px 32px}
+.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(140deg,#36b8f8,#5b62f6 65%,#a35af8);color:white;display:grid;place-items:center;font-size:22px;font-weight:800;box-shadow:0 7px 18px #647df43b}
+.brand strong{font-size:17px;letter-spacing:-.5px}
+.brand small{display:block;color:var(--muted);margin-top:4px;font-size:11px}
+.nav-label{font-size:10px;letter-spacing:1.5px;color:#9aa6bd;padding:8px 12px}
+.nav{display:flex;align-items:center;gap:12px;padding:12px;border-radius:11px;color:#647391;text-decoration:none;margin-bottom:5px}
+.nav.active{background:linear-gradient(110deg,#e8f1ff,#f0eaff);color:#3469eb;font-weight:700}
+.nav-icon{width:22px;text-align:center;font-size:17px}
+.sidebar-bottom{margin-top:auto;padding:15px;border:1px solid #e4eaff;border-radius:15px;background:linear-gradient(145deg,#f1f7ff,#f8f4ff)}
+.sidebar-bottom strong{display:block;margin:8px 0}
+.sidebar-bottom p{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
+.main{flex:1;min-width:0;padding:30px clamp(16px,3vw,42px);max-width:1700px;margin:0 auto;width:100%}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:25px}
+.eyebrow{font-size:10px;letter-spacing:2px;color:#6480b3;font-weight:700}
+h1{font-size:clamp(25px,3vw,35px);letter-spacing:-1.4px;margin:8px 0}
+.gradient-text{background:linear-gradient(100deg,#2688ef,#6958ef,#a54fdb);background-clip:text;-webkit-background-clip:text;color:transparent}
+.subtitle{color:var(--muted);margin:0;line-height:1.6}
+.status{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);padding:10px 14px;border-radius:30px;font-size:12px;white-space:nowrap}
+.dot{height:8px;width:8px;border-radius:50%;background:#18bd8a;box-shadow:0 0 0 4px #dff8ef}
+.scan-hero{position:relative;overflow:hidden;background:linear-gradient(115deg,#fff 5%,#f0f6ff 65%,#f0edff);border:1px solid #dce7ff;border-radius:19px;padding:24px;margin-bottom:20px}
+.scan-hero:after{content:"";position:absolute;width:220px;height:220px;right:-65px;top:-130px;border:35px solid #dce6ff80;border-radius:50%;pointer-events:none}
+.scan-heading{display:flex;gap:15px;align-items:center;position:relative;z-index:1}
+.folder-icon{width:55px;height:55px;border-radius:17px;background:linear-gradient(145deg,#d6eaff,#e8e2ff);display:grid;place-items:center;font-size:26px;flex-shrink:0}
+h2{font-size:17px;margin:0 0 6px;letter-spacing:-.3px}
+.scan-heading p{color:var(--muted);margin:0;line-height:1.5}
+.scan-form{display:flex;gap:10px;margin-top:19px;position:relative;z-index:1}
+input{flex:1;min-width:0;padding:14px;border:1px solid #dce5f5;border-radius:10px;background:#fff;outline:none;color:var(--text)}
+input:focus{border-color:#7c91f9;box-shadow:0 0 0 3px #7893f51b}
+.primary{border:0;border-radius:10px;background:linear-gradient(110deg,#347ff7,#7456f4);color:#fff;padding:0 22px;font-weight:700;box-shadow:0 7px 17px #5e72ed30}
+.primary:disabled{opacity:.6;cursor:wait}
+.message{font-size:12px;color:#5d72a0;margin:12px 0 0;min-height:16px;overflow-wrap:anywhere}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.metric{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:19px;min-width:0;box-shadow:0 5px 20px #344d7b05}
+.metric-top{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.metric-icon{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;font-size:19px}
+.metric:nth-child(1) .metric-icon{background:#e3f3ff;color:#258be8}
+.metric:nth-child(2) .metric-icon{background:#eee7ff;color:#8055e9}
+.metric:nth-child(3) .metric-icon{background:#ffe8f0;color:#e34f88}
+.metric:nth-child(4) .metric-icon{background:#fff0d9;color:#d98520}
+.metric strong{display:block;font-size:clamp(21px,2.2vw,29px);letter-spacing:-.7px;margin:13px 0 4px;overflow-wrap:anywhere}
+.metric small{color:var(--muted);font-size:11px}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:17px;margin-bottom:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:21px;min-width:0;box-shadow:0 6px 22px #344d7b05}
+.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
+.panel-heading p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.pill{border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#617292;background:#fff;font-size:11px}
+.file-row{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(60px,1fr) 76px;align-items:center;gap:12px;margin:15px 0}
+.file-name{min-width:0;overflow-wrap:anywhere;font-size:12px}
+.bar-track{height:9px;border-radius:20px;background:#edf1fa;overflow:hidden}
+.bar{height:100%;border-radius:20px;background:linear-gradient(90deg,#43a5f7,#8058f5);min-width:2px}
+.file-size{text-align:right;color:#536483;font-size:11px;white-space:nowrap}
+.empty{padding:24px 10px;text-align:center;color:var(--muted);font-size:12px;line-height:1.7}
+.type-layout{display:flex;align-items:center;justify-content:center;gap:22px;min-height:210px;flex-wrap:wrap}
+.donut{width:155px;height:155px;border-radius:50%;background:conic-gradient(#438ef7 0deg 120deg,#865df4 120deg 210deg,#29c4b0 210deg 270deg,#ffb84d 270deg 315deg,#dbe5f5 315deg 360deg);position:relative;flex-shrink:0}
+.donut:after{content:"";position:absolute;inset:35px;border-radius:50%;background:#fff}
+.donut-center{position:absolute;z-index:1;inset:0;display:grid;place-content:center;text-align:center;font-weight:800;font-size:20px}
+.donut-center small{font-weight:400;font-size:11px;color:var(--muted);margin-top:3px}
+.legend{display:grid;gap:12px;min-width:115px}
+.legend-item{display:flex;align-items:center;gap:8px;color:#61718e;font-size:11px}
+.legend-dot{width:9px;height:9px;border-radius:4px;background:#438ef7}
+.legend-note{font-size:10px;color:#9aa6bd;line-height:1.5}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{text-align:left;background:#f6f8fd;color:#7d8ba5;font-weight:600;font-size:11px}
+th,td{padding:13px 12px;border-bottom:1px solid #edf0f7}
+td{font-size:12px;overflow-wrap:anywhere}
+tbody tr:last-child td{border-bottom:0}
+.file-cell{display:flex;align-items:center;gap:8px}
+.file-badge{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#edf3ff;color:#4779ed;flex-shrink:0}
+.duplicate-path{color:#73819c;font-size:11px;line-height:1.7;overflow-wrap:anywhere}
+footer{text-align:center;padding:22px 0 6px;color:#9aa6bd;font-size:11px}
+@media(max-width:1050px){.sidebar{width:190px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.app{display:block}.sidebar{width:100%;padding:14px;display:block;border-right:0;border-bottom:1px solid var(--line)}.brand{padding-bottom:12px}.nav-label,.sidebar-bottom{display:none}.nav-list{display:flex;overflow-x:auto;gap:5px}.nav{white-space:nowrap;padding:10px}.main{padding:20px 13px}.topbar{align-items:flex-start;flex-direction:column}.scan-form{flex-direction:column}.primary{padding:14px}.metrics{gap:9px}.metric{padding:13px}.metric-icon{width:32px;height:32px}.panel{padding:15px}.file-row{grid-template-columns:minmax(0,1fr) 75px;gap:8px}.bar-track{grid-column:1 / 2;grid-row:2}.file-size{grid-column:2;grid-row:1}.type-layout{gap:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">◈</div>
+    <div><strong>Disk Detective</strong><small>STORAGE INTELLIGENCE</small></div>
+  </div>
+  <div class="nav-label">WORKSPACE</div>
+  <nav class="nav-list">
+    <a class="nav active" href="#overview"><span class="nav-icon">⌂</span>Overview</a>
+    <a class="nav" href="#scan"><span class="nav-icon">⌕</span>Scan folders</a>
+    <a class="nav" href="#largest"><span class="nav-icon">▥</span>Largest files</a>
+    <a class="nav" href="#duplicates"><span class="nav-icon">▧</span>Duplicates</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div style="font-size:23px">✳</div>
+    <strong>Know your storage.</strong>
+    <p>Find large files and identical content with a local, read-only scan.</p>
+  </div>
+</aside>
+
+<main class="main" id="overview">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">YOUR STORAGE, DECODED</div>
+      <h1>Meet <span class="gradient-text">Disk Detective.</span></h1>
+      <p class="subtitle">A clearer picture of what's taking up space.</p>
+    </div>
+    <div class="status"><span class="dot"></span><span id="backendStatus">Local analyzer</span></div>
+  </header>
+
+  <section class="scan-hero" id="scan">
+    <div class="scan-heading">
+      <div class="folder-icon">📁</div>
+      <div><h2>Start an investigation</h2><p>Choose a folder to reveal its storage footprint, largest files and duplicates.</p></div>
+    </div>
+    <form class="scan-form" id="scanForm">
+      <input id="folder" placeholder="e.g. C:\Users\YourName\Documents or TestFolder" required>
+      <button class="primary" id="scanButton" type="submit">↗ &nbsp; Scan folder</button>
+    </form>
+    <p class="message" id="status" role="status">Ready when you are. Your files won't be modified.</p>
+  </section>
+
+  <section class="metrics" aria-label="Scan summary">
+    <article class="metric"><div class="metric-top"><span class="metric-icon">▤</span>Files scanned</div><strong id="count">—</strong><small id="countNote">Awaiting first scan</small></article>
+    <article class="metric"><div class="metric-top"><span class="metric-icon">◉</span>Total storage</div><strong id="storage">—</strong><small id="storageNote">Combined file size</small></article>
+    <article class="metric"><div class="metric-top"><span class="metric-icon">▧</span>Duplicate groups</div><strong id="duplicates">—</strong><small id="duplicateNote">Identical file contents</small></article>
+    <article class="metric"><div class="metric-top"><span class="metric-icon">⚠</span>Unreadable files</div><strong id="unreadable">—</strong><small id="unreadableNote">Files skipped during scan</small></article>
+  </section>
+
+  <section class="content-grid">
+    <article class="panel" id="largest">
+      <div class="panel-heading"><div><h2>Largest files</h2><p>Your top 10 files by size</p></div><span class="pill">TOP 10</span></div>
+      <div id="largestList" class="empty">Run a scan to rank your largest files.</div>
+    </article>
+    <article class="panel">
+      <div class="panel-heading"><div><h2>Storage snapshot</h2><p>Size distribution of the largest files</p></div><span class="pill">BY SIZE</span></div>
+      <div class="type-layout">
+        <div class="donut" id="donut"><div class="donut-center"><span id="donutTotal">—</span><small>Top files</small></div></div>
+        <div class="legend" id="legend"><div class="legend-note">Chart appears after a successful scan.</div></div>
+      </div>
+      <p class="legend-note">This visualization uses the largest files returned by the scanner, not a full-disk file-type inventory.</p>
+    </article>
+  </section>
+
+  <section class="panel" id="duplicates">
+    <div class="panel-heading"><div><h2>Duplicate files</h2><p>Files with matching content hashes</p></div><span class="pill">SHA-256</span></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>GROUP</th><th>FILES FOUND</th><th>LOCATIONS</th></tr></thead>
+      <tbody id="duplicateList"><tr><td colspan="3" class="empty">No scan results yet.</td></tr></tbody></table>
+    </div>
+  </section>
+  <footer>Disk Detective · Local storage analysis · Read-only by design</footer>
+</main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const escapeHtml = value => String(value).replace(/[&<>"']/g, ch => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[ch]));
+const formatSize = bytes => {
+  if (bytes >= 1024 ** 3) return (bytes / (1024 ** 3)).toFixed(2) + " GB";
+  if (bytes >= 1024 ** 2) return (bytes / (1024 ** 2)).toFixed(2) + " MB";
+  if (bytes >= 1024) return (bytes / 1024).toFixed(2) + " KB";
+  return bytes + " B";
+};
+
+async function checkBackend(){
+  try{
+    const response = await fetch("/api/health");
+    if(!response.ok) throw new Error("Offline");
+    const data = await response.json();
+    $("backendStatus").textContent = data.status === "online" ? "Backend connected" : "Backend status unknown";
+  }catch{
+    $("backendStatus").textContent = "Backend unavailable";
+    $("status").textContent = "Cannot reach the backend. Start it with: python -m uvicorn main:app --reload";
+  }
+}
+checkBackend();
+
+$("scanForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = $("scanButton");
+  const folderPath = $("folder").value.trim();
+  if(!folderPath) return;
+
+  button.disabled = true;
+  button.textContent = "Scanning…";
+  $("status").textContent = "Investigating folder contents. Large folders may take a little while.";
+
+  try{
+    const response = await fetch("/api/scan", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({folder_path:folderPath})
+    });
+    const data = await response.json();
+    if(!response.ok) throw new Error(data.detail || "Scan failed.");
+
+    $("count").textContent = data.file_count.toLocaleString();
+    $("storage").textContent = formatSize(data.total_size_bytes);
+    $("duplicates").textContent = data.duplicate_group_count;
+    $("unreadable").textContent = data.unreadable_count;
+    $("countNote").textContent = "Files found in selected folder";
+    $("storageNote").textContent = data.total_size_mb.toLocaleString() + " MB combined";
+    $("duplicateNote").textContent = data.duplicate_groups.reduce((sum, group) => sum + group.count, 0) + " files across matching groups";
+    $("unreadableNote").textContent = data.unreadable_count ? "Some files could not be read" : "No read errors reported";
+    $("status").textContent = "Scan completed · " + data.folder;
+    renderLargest(data.largest_files || []);
+    renderDuplicates(data.duplicate_groups || []);
+  }catch(error){
+    $("status").textContent = "Scan failed: " + error.message;
+  }finally{
+    button.disabled = false;
+    button.innerHTML = "↗ &nbsp; Scan folder";
+  }
+});
+
+function renderLargest(files){
+  const container = $("largestList");
+  if(!files.length){
+    container.innerHTML = '<div class="empty">No files found in this folder.</div>';
+    $("donutTotal").textContent = "0";
+    $("legend").innerHTML = '<div class="legend-note">No file sizes to visualize.</div>';
+    $("donut").style.background = "#e9eef8";
+    return;
+  }
+  const max = Math.max(...files.map(file => file.size_bytes), 1);
+  container.innerHTML = files.map(file => `
+    <div class="file-row">
+      <div class="file-name" title="${escapeHtml(file.path)}">${escapeHtml(file.name)}</div>
+      <div class="bar-track"><div class="bar" style="width:${Math.max(1, file.size_bytes/max*100)}%"></div></div>
+      <div class="file-size">${formatSize(file.size_bytes)}</div>
+    </div>`).join("");
+
+  const total = files.reduce((sum, file) => sum + file.size_bytes, 0);
+  $("donutTotal").textContent = formatSize(total);
+  const colors = ["#438ef7","#865df4","#29c4b0","#ffb84d","#e9538c","#a9bad6","#43b8e8","#a2d9b9","#f08d70","#c1a0ff"];
+  let angle = 0;
+  const stops = files.map((file, index) => {
+    const start = angle;
+    angle += total ? file.size_bytes / total * 360 : 0;
+    return `${colors[index % colors.length]} ${start}deg ${angle}deg`;
+  });
+  $("donut").style.background = "conic-gradient(" + stops.join(",") + ")";
+  $("legend").innerHTML = files.slice(0,5).map((file,index) => `
+    <div class="legend-item"><span class="legend-dot" style="background:${colors[index]}"></span>
+    <span title="${escapeHtml(file.name)}">${escapeHtml(file.name.length > 17 ? file.name.slice(0,14)+"…" : file.name)}</span></div>
+  `).join("");
+}
+
+function renderDuplicates(groups){
+  const tbody = $("duplicateList");
+  if(!groups.length){
+    tbody.innerHTML = '<tr><td colspan="3" class="empty">No identical files detected in this scan.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = groups.map((group,index) => `
+    <tr>
+      <td><strong>Group ${index+1}</strong></td>
+      <td>${group.count} matching files</td>
+      <td>${group.files.map(path => `<div class="duplicate-path">${escapeHtml(path)}</div>`).join("")}</td>
+    </tr>`).join("");
+}
+</script>
+</body>
+</html>
